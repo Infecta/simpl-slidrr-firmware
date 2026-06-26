@@ -55,6 +55,9 @@ class _AirStringBar(QWidget):
         self._beam.setFixedHeight(12)
         self._beam.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         self._beam.setFrameShape(QFrame.Shape.NoFrame)
+        self._beam.setStyleSheet(
+            f"background-color: {_AIR_IDLE}; border-radius: 4px; border: 1px solid {_AIR_TRACK};"
+        )
 
         self._raw = QLabel("—")
         self._raw.setFixedWidth(44)
