@@ -108,7 +108,9 @@ class DeviceWorker(QObject):
             self._poll.start()
         except Exception as exc:
             self._disconnect_internal()
-            if not self._is_link_lost(exc):
+            if self._is_link_lost(exc):
+                self.disconnected.emit()
+            else:
                 self.error.emit(str(exc))
 
     @Slot()

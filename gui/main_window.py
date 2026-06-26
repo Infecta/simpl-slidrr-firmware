@@ -43,6 +43,7 @@ class MainWindow(QMainWindow):
         self._thread.start()
 
         self._connected_port: str | None = None
+        self._suppressed_port: str | None = None
 
         self._build_toolbar()
         self._build_central()
@@ -53,6 +54,10 @@ class MainWindow(QMainWindow):
         self._worker.config_loaded.connect(self._on_config_loaded)
         self._worker.operation_finished.connect(self._on_operation_finished)
         self._worker.error.connect(self._on_error)
+
+        self._scan_timer = QTimer(self)
+        self._scan_timer.setInterval(1500)
+        self._scan_timer.timeout.connect(self._auto_scan)
 
         self._refresh_ports()
         self._set_connected_ui(False)
@@ -130,8 +135,7 @@ class MainWindow(QMainWindow):
             QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Maximum
         )
         self._connect_hint = QLabel(
-            "To get started:  1. Plug in the device via USB  ·  "
-            "2. Click Refresh  ·  3. Select the port  ·  4. Click Connect"
+            "Plug in the device via USB to connect automatically."
         )
         self._connect_hint.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self._connect_hint.setStyleSheet("color: #555; font-size: 12px; padding: 8px 0;")
@@ -191,14 +195,31 @@ class MainWindow(QMainWindow):
 
     def _toggle_connect(self) -> None:
         if self._connect_btn.text() == "Disconnect":
+            self._suppressed_port = self._connected_port
             self._worker.disconnect_requested.emit()
             return
+        self._suppressed_port = None
         port = self._port_combo.currentData()
         if not port:
             QMessageBox.warning(self, "No port", "Select a serial port first.")
             return
+        self._scan_timer.stop()
         self._show_status(f"Connecting to {port}…")
         self._worker.connect_requested.emit(port, 115200)
+
+    def _auto_scan(self) -> None:
+        if self._suppressed_port:
+            active_ports = [p for p, _ in list_serial_ports()]
+            if self._suppressed_port not in active_ports:
+                self._suppressed_port = None
+            else:
+                return
+        port = find_config_port()
+        if port:
+            self._scan_timer.stop()
+            self._refresh_ports()
+            self._show_status(f"Auto-detected {port}, connecting…")
+            self._worker.connect_requested.emit(port, 115200)
 
     def _apply_config(self) -> None:
         cfg, flags = self._config_editor.collect_for_apply()
@@ -246,9 +267,15 @@ class MainWindow(QMainWindow):
 
     def _on_error(self, message: str) -> None:
         self._show_status(message, 8000)
+        if not self._connected_port:
+            self._scan_timer.start()
 
     def _set_connected_ui(self, connected: bool) -> None:
         self._connect_hint.setVisible(not connected)
+        if connected:
+            self._scan_timer.stop()
+        else:
+            self._scan_timer.start()
         self._connect_btn.setText("Disconnect" if connected else "Connect")
         self._port_combo.setEnabled(not connected)
         self._refresh_btn.setEnabled(not connected)
