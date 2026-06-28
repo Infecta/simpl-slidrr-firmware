@@ -165,22 +165,25 @@ class MainWindow(QMainWindow):
         _nav_h = self._connect_btn.sizeHint().height()
         self._refresh_btn.setFixedSize(_nav_h, _nav_h)
 
-        # --- Flexible spacer pushes config actions to the right ---
-        _spacer = QWidget()
-        _spacer.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
-        tb.addWidget(_spacer)
+    def _build_action_bar(self) -> QWidget:
+        bar = QWidget()
+        bar.setObjectName("actionBar")
+        bar.setStyleSheet("#actionBar { border-top: 1px solid palette(mid); }")
+        row = QHBoxLayout(bar)
+        row.setContentsMargins(8, 6, 8, 6)
+        row.setSpacing(6)
 
-        # --- Right: Reload (read from device) ---
+        row.addStretch()
+
         self._reload_btn = QPushButton("Read config")
         self._reload_btn.setStyleSheet(_BTN_MUTED)
         self._reload_btn.setToolTip("Re-read the current config from the connected device")
         self._reload_btn.clicked.connect(lambda: self._worker.refresh_requested.emit())
-        tb.addWidget(self._reload_btn)
+        row.addWidget(self._reload_btn)
 
-        # --- Right: Apply + Save segmented pair (write to device) ---
         _seg = QWidget()
         _seg_row = QHBoxLayout(_seg)
-        _seg_row.setContentsMargins(6, 0, 0, 0)
+        _seg_row.setContentsMargins(0, 0, 0, 0)
         _seg_row.setSpacing(0)
 
         self._apply_btn = QPushButton("Apply to device")
@@ -195,12 +198,14 @@ class MainWindow(QMainWindow):
         self._save_btn.clicked.connect(lambda: self._worker.save_requested.emit())
         _seg_row.addWidget(self._save_btn)
 
-        tb.addWidget(_seg)
+        row.addWidget(_seg)
 
         self._unsaved_label = QLabel("● unsaved")
         self._unsaved_label.setStyleSheet("color: #f0a040; font-size: 11px; padding: 0 4px;")
         self._unsaved_label.setVisible(False)
-        tb.addWidget(self._unsaved_label)
+        row.addWidget(self._unsaved_label)
+
+        return bar
 
     def _build_branding_header(self) -> QWidget:
         header = QWidget()
@@ -251,6 +256,7 @@ class MainWindow(QMainWindow):
         layout.addWidget(self._telemetry_panel, alignment=Qt.AlignmentFlag.AlignTop)
         layout.addStretch(1)
         layout.addWidget(bottom)
+        layout.addWidget(self._build_action_bar())
         layout.addWidget(self._build_footer())
         self.setCentralWidget(central)
 
