@@ -1,10 +1,10 @@
 # simpl-slidrr-firmware
 
-Firmware for **simpl-slirr** that emulates the **IO4 board + slider serial** on a single Raspberry Pi Pico.
+Pi Pico Firmware for **simpl-slirr** that emulates the **IO4 board and slider serial**.
 
 > [!Warning]
-> ### Disclosure for usage of Agentic AI Coding
-> Much of this repo was vibe-coded with AI assistance. It builds and runs on real hardware, but treat it as a community fork — report issues if something breaks.
+> ### Use of Agentic AI Coding Disclosure
+> Much of this repo (especially the GUI) was vibe-coded with AI assistance. It builds and runs on real hardware, but treat it as a community fork — report issues if something breaks.
 
 ## About
 
@@ -13,19 +13,20 @@ Built on [whowechina/chu_pico](https://github.com/whowechina/chu_pico), with the
 ### What changed from upstream chu_pico
 
 - **Real slider and IO4 emulation only** — `joy` (RedBoard) and `nkro` HID modes removed; If you wanted keyboard output use slidershim
-- **IR towers** for air keys — always on; no ToF support removed to simplicity
+- **IR towers** for air keys — always on; no ToF support removed for simplicity
 - **No RGB / WS2812** strips
 - **Single-core** firmware (multicore removed because it was only running lights)
 - **4th USB CDC** — binary **SMPL** config protocol for desktop tools ([`docs/protocol.md`](docs/protocol.md))
 
-Pin wiring is unchanged from stock chu_pico — see [whowechina's docs](https://github.com/whowechina/chu_pico) for hardware.
+Pin wiring is unchanged from stock chu_pico — see [whowechina's docs](https://github.com/whowechina/chu_pico).
 
-## Quick start (games)
+## Quick start
 
 Assumes chu_pico-compatible wiring.
 
 1. Flash `simpl-slidrr-firmware.uf2` onto your Pico.
 2. **After a firmware update** (or first flash of this fork), open the CLI port and run **`factory`** to reset flash-backed config to defaults. Old flash may hold legacy values from upstream firmware.
+2a. Make sure slider port is set to `COM1`
 3. In your game/tools `.ini`, disable software slider and IO4 emulation:
 
 ```
@@ -44,10 +45,10 @@ enable=0
 
 | Interface | String name | Purpose |
 |-----------|-------------|---------|
-| HID | *(IO4 board name goes here)* | Game input — air keys + aux buttons |
-| CDC 0 | `simpl-slidrr CLI Port` | Text CLI (`stdio_usb`) |
+| HID | *(IO4 board name goes here)* | Air strings + SERVICE and TEST buttons |
+| CDC 0 | `simpl-slidrr CLI Port` | Text CLI (Serial)|
 | CDC 1 | `simpl-slidrr Slider Port` | Slider serial port |
-| CDC 2 | `simpl-slidrr AIME Port` | NFC / AIME passthrough |
+| CDC 2 | `simpl-slidrr AIME Port` | AIME Port |
 | CDC 3 | `simpl-slidrr config port` | SMPL binary config protocol |
 
 ## Building
@@ -104,11 +105,9 @@ python tools/protocol_test.py COM10        # explicit port
 
 - Native slider protocol (CDC 1)
 - Native IO4 HID — air keys, Service, Test, Coin
-- IR tower air sensing (6 sensors)
-- MPR121 touch slider (32 keys)
 - NFC / AIME passthrough (CDC 2)
 - Flash-backed config via CLI, SMPL protocol, or GUI
-- Text CLI (unchanged workflow from chu_pico)
+- CLI
 
 ## Credits
 
