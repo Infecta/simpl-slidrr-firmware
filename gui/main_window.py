@@ -231,6 +231,7 @@ class MainWindow(QMainWindow):
         self._config_editor._recalc_btn.clicked.connect(
             lambda: self._worker.recalc_touch_requested.emit()
         )
+        self._config_editor._update_btn.clicked.connect(self._reboot_update_mode)
         self._config_editor._factory_btn.clicked.connect(self._factory_reset)
 
         self._config_editor._ir_trig_slider.valueChanged.connect(
@@ -336,6 +337,19 @@ class MainWindow(QMainWindow):
             return
         self._worker.apply_requested.emit(cfg, flags)
 
+    def _reboot_update_mode(self) -> None:
+        msg = QMessageBox(self.window())
+        msg.setWindowTitle("Reboot to update mode")
+        msg.setText(
+            "Reboot the device into USB firmware update mode (RPI-RP2 drive)?\n\n"
+            "Copy simpl-slidrr-firmware.uf2 onto the drive to flash. "
+            "The device restarts normally when the update finishes."
+        )
+        msg.setStandardButtons(QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+        msg.setDefaultButton(QMessageBox.StandardButton.No)
+        if msg.exec() == QMessageBox.StandardButton.Yes:
+            self._worker.boot_bootloader_requested.emit()
+
     def _factory_reset(self) -> None:
         msg = QMessageBox(self.window())
         msg.setWindowTitle("Factory reset")
@@ -394,6 +408,7 @@ class MainWindow(QMainWindow):
             self._save_btn,
             self._config_editor._capture_ir_btn,
             self._config_editor._recalc_btn,
+            self._config_editor._update_btn,
             self._config_editor._factory_btn,
         ):
             btn.setEnabled(connected)

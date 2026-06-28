@@ -176,13 +176,14 @@ class ConfigEditor(QWidget):
         btn_col = QVBoxLayout()
         self._capture_ir_btn = QPushButton("Capture IR baseline")
         self._recalc_btn = QPushButton("Recalc touch")
+        self._update_btn = QPushButton("Reboot to update mode…")
         self._factory_btn = QPushButton("Factory reset…")
         self._factory_btn.setStyleSheet(
             "QPushButton { color: #d9534f; border: 1px solid #6b2020; }"
             "QPushButton:hover { background: #3a1010; }"
             "QPushButton:disabled { color: #555; border-color: #444; }"
         )
-        for btn in (self._capture_ir_btn, self._recalc_btn):
+        for btn in (self._capture_ir_btn, self._recalc_btn, self._update_btn):
             btn_col.addWidget(btn)
         btn_col.addSpacing(8)
         btn_col.addWidget(self._factory_btn)

@@ -52,6 +52,7 @@ CRC is computed over bytes `[0 .. 10+N-1]` with initial value `0xFFFF` and polyn
 | `0x31` | FACTORY_RESET | empty | `status` u8 |
 | `0x40` | RECALC_TOUCH | empty | `status` u8 |
 | `0x41` | CAPTURE_IR_BASELINE | empty | `status` u8, `ir.base[6]` as six u16 LE |
+| `0x42` | BOOT_BOOTLOADER | empty | `status` u8; device reboots into RPI-RP2 UF2 update mode (same as CLI `update`) |
 | `0xA0` | TELEMETRY_PUSH | *(unsolicited, `seq` = 0)* | telemetry snapshot (219 bytes) |
 
 ### Status codes
@@ -175,4 +176,4 @@ pip install -r requirements.txt
 python main.py
 ```
 
-On connect: PING, `GET_CONFIG`, `STREAM_ON` at 60 Hz. Config edits use `SET_CONFIG` section flags + toolbar **Apply**; **Save** sends `SAVE`. Device panel: `CAPTURE_IR_BASELINE`, `RECALC_TOUCH`, `FACTORY_RESET`.
+On connect: PING, `GET_CONFIG`, `STREAM_ON` at 60 Hz. Config edits use `SET_CONFIG` section flags + toolbar **Apply**; **Save** sends `SAVE`. Device panel: `CAPTURE_IR_BASELINE`, `RECALC_TOUCH`, `BOOT_BOOTLOADER`, `FACTORY_RESET`.

@@ -7,6 +7,7 @@
 #include <string.h>
 
 #include "tusb.h"
+#include "pico/bootrom.h"
 #include "pico/time.h"
 
 #include "config.h"
@@ -238,6 +239,14 @@ static void handle_capture_ir_baseline(uint8_t itf, uint16_t seq)
     send_frame(itf, PROTO_OP_CAPTURE_IR_BASE, seq, resp, sizeof(resp));
 }
 
+static void handle_boot_bootloader(uint8_t itf, uint16_t seq)
+{
+    send_status(itf, PROTO_OP_BOOT_BOOTLOADER, seq, PROTO_STATUS_OK);
+    tud_cdc_n_write_flush(itf);
+    sleep_ms(100);
+    reset_usb_boot(0, 2);
+}
+
 static void dispatch_frame(uint8_t itf, const uint8_t *frame, size_t frame_len)
 {
     uint8_t opcode = frame[5];
@@ -279,6 +288,9 @@ static void dispatch_frame(uint8_t itf, const uint8_t *frame, size_t frame_len)
         break;
     case PROTO_OP_CAPTURE_IR_BASE:
         handle_capture_ir_baseline(itf, seq);
+        break;
+    case PROTO_OP_BOOT_BOOTLOADER:
+        handle_boot_bootloader(itf, seq);
         break;
     default:
         break;

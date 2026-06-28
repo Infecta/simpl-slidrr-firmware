@@ -33,6 +33,7 @@ class DeviceWorker(QObject):
     factory_reset_requested = Signal()
     recalc_touch_requested = Signal()
     capture_ir_requested = Signal()
+    boot_bootloader_requested = Signal()
 
     connected = Signal(dict)
     disconnected = Signal()
@@ -56,6 +57,7 @@ class DeviceWorker(QObject):
         self.factory_reset_requested.connect(self.factory_reset)
         self.recalc_touch_requested.connect(self.recalc_touch)
         self.capture_ir_requested.connect(self.capture_ir_baseline)
+        self.boot_bootloader_requested.connect(self.boot_bootloader)
 
     def _is_link_lost(self, exc: BaseException) -> bool:
         if isinstance(exc, (SerialException, OSError, PermissionError)):
@@ -141,6 +143,24 @@ class DeviceWorker(QObject):
     @Slot()
     def capture_ir_baseline(self) -> None:
         self._run_op("capture_ir_baseline", self._do_capture_ir_baseline)
+
+    @Slot()
+    def boot_bootloader(self) -> None:
+        if not self._cli:
+            self.error.emit("Not connected")
+            return
+        self._poll.stop()
+        try:
+            self._cli.boot_bootloader()
+            self.operation_finished.emit("boot_bootloader", "ok")
+        except Exception as exc:
+            if self._is_link_lost(exc):
+                self.operation_finished.emit("boot_bootloader", "ok")
+            else:
+                self.error.emit(f"boot_bootloader: {exc}")
+        finally:
+            self._disconnect_internal()
+            self.disconnected.emit()
 
     def _run_op(self, name: str, fn) -> None:
         if not self._cli:

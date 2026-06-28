@@ -29,6 +29,7 @@ OP_SAVE = 0x30
 OP_FACTORY_RESET = 0x31
 OP_RECALC_TOUCH = 0x40
 OP_CAPTURE_IR_BASE = 0x41
+OP_BOOT_BOOTLOADER = 0x42
 OP_TELEMETRY_PUSH = 0xA0
 
 CFG_SECTION_SENSE = 0x0001
@@ -376,3 +377,9 @@ class ProtocolClient:
         pl = self.transact(OP_RECALC_TOUCH, timeout=10.0)
         if pl[0] != STATUS_OK:
             raise RuntimeError(f"RECALC_TOUCH failed status={pl[0]}")
+
+    def boot_bootloader(self) -> None:
+        """Reboot into Pico USB firmware update mode (RPI-RP2 UF2 drive)."""
+        pl = self.transact(OP_BOOT_BOOTLOADER, timeout=5.0)
+        if pl[0] != STATUS_OK:
+            raise RuntimeError(f"BOOT_BOOTLOADER failed status={pl[0]}")
